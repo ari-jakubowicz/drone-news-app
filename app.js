@@ -2,18 +2,12 @@ const express = require("express");
 const app = express();
 const axios = require("axios");
 const https = require("https");
+const cors = require("cors");
 
+app.use(cors());
 
 app.get("/api", (req, res) => {
-  //res.json({"users": ["userOne", "userTwo", "userThree"]})
-
-  // const options = {
-  //  headers: {'User-Agent': 'test'},
-  //  host: "newsapi.org",
-  //  path: "/v2/everything?q=+drone&apiKey=da280194eb264983b9bc524ff34e7b57"
-  // }
-
-    axios
+  axios
     .get("https://newsapi.org/v2/everything?q=+drone&apiKey=da280194eb264983b9bc524ff34e7b57")
     .then((response) => {
       let data = response.data;
@@ -22,51 +16,28 @@ app.get("/api", (req, res) => {
     .catch((error) => {
       console.log(error);
     })
-    // let data = "";
-
-    // resp.on("data", chunk => {
-    //   data += chunk;
-    // });
-
-    // resp.on("end", () => {
-    //   let url = JSON.parse(data);
-    //   console.log(url);
-    // })
 })
 
+function findArticles(inputValue, allArticles) {
+  return allArticles.filter((el, i) => {
+    return el.title.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
+  });
+}
+
+app.get("/search/:search", (req, res) => {
+  axios
+    .get("https://newsapi.org/v2/everything?q=+drone&apiKey=da280194eb264983b9bc524ff34e7b57")
+    .then((response) => {
+      // console.log(response.data)
+      let allArticles = response.data.articles;
+      let inputValue = req.params.search;
+
+      let searchResult = findArticles(inputValue, allArticles);
+      res.send({ articles: searchResult });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
 app.listen(5000, () => {console.log("Server started on port 5000")});
-
-
-
-//------------------
-
-
-// app.post("/post", (req, res) => {
-// console.log("Connected to React", req.get('user-agent'));
-// res.redirect("/");
-// });
-
-// const PORT = process.env.PORT || 8080;
-
-
-// const options = {
-//   headers: {'User-Agent': 'test'},
-//   host: "newsapi.org",
-//   path: "/v2/everything?q=+drone&apiKey=da280194eb264983b9bc524ff34e7b57"
-// }
-
-// app.get('/news', (options, resp) => {
-//     let data = "";
-
-//     resp.on("data", chunk => {
-//       data += chunk;
-//     });
-
-//     resp.on("end", () => {
-//       let url = JSON.parse(data);
-//       console.log(url);
-//     })
-    
-//   });
-
-// app.listen(PORT, console.log(`Server started on port ${PORT}`));
