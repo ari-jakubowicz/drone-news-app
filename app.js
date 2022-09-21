@@ -8,7 +8,7 @@ app.use(cors());
 
 app.get("/api", (req, res) => {
   axios
-    .get("https://newsapi.org/v2/everything?q=+drone&apiKey=da280194eb264983b9bc524ff34e7b57")
+    .get("https://newsapi.org/v2/everything?q=+drones&sortBy=publishedAt&searchIn=title&apiKey=da280194eb264983b9bc524ff34e7b57")
     .then((response) => {
       let data = response.data;
       res.send({data});
