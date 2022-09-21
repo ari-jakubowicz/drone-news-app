@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import React, { useEffect, useState } from 'react'
 import "./App.css";
 
@@ -52,6 +51,10 @@ function App() {
       });
   };
 
+  const truncateArticleContent = (content) => {
+    return (content.length > 200) ? content.substring(0, 200) : content;
+  }
+
 
  return (
  	<div className="App">
@@ -63,7 +66,16 @@ function App() {
        <p>Loading...</p>
      ): (
        backendData.articles.map((article, i) => (
-         <p key={i}> {article.title} </p>
+        <>
+          <div className='headline-container'>
+            <span className='headline-title'> {article.title} <a className='secondary-text' href={article.url}> To full article </a> </span>
+            <span className='content'> {truncateArticleContent(article.content)} </span>
+            <span className='author'> 
+              <span style={{textTransform: "capitalize"}}> By </span>
+              {article.author} 
+            </span>
+          </div>
+        </>
        ))
      )}
  	</div>
