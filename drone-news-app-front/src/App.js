@@ -9,52 +9,61 @@ function App() {
     const initialValue = JSON.parse(saved);
     return initialValue || "";
   });
-  
-  useEffect(() => {
-    if (localStorage.getItem("articles")) {
-      console.log("Using local storage");
-      setBackendData(JSON.parse(localStorage.getItem("articles")));
-    } else {
-      console.log("Using API");
-      fetch("/api").then(
-        response => response.json()
-        ).then(
-          data => {
-            setBackendData(data.data);
-            localStorage.setItem("articles", JSON.stringify(data.data));
-          }
-        )
-    }
-  },[])
 
-  const updateArticles = () => {
-    localStorage.clear("articles");
+  
+  const callApi = () => {
     fetch("/api").then(
       response => response.json()
       ).then(
         data => {
           setBackendData(data.data);
+          localStorage.clear();
           localStorage.setItem("articles", JSON.stringify(data.data));
+          const today = new Date(Date.now());
+          console.log("last data update: " + today); 
+          localStorage.setItem("last_update", today);
         }
       )
+    }
+    
+    
+    const updateArticles = () => {
+    localStorage.clear("articles");
+    callApi();
   }
 
   const handleInput = (e) => {
     setSearch(e.target.value);
   };
-
+  
   const handleSearch = (e) => {
     fetch("http://localhost:5000/search/" + search)
       .then((response) => response.json())
       .then((data) => {
         setBackendData(data);
       });
-  };
+    };
 
-  const truncateArticleContent = (content) => {
-    return (content.length > 200) ? content.substring(0, 200) : content;
-  }
-
+    const truncateArticleContent = (content) => {
+      return (content.length > 200) ? content.substring(0, 200) : content;
+    }
+    
+    useEffect(() => {
+      callApi();
+      let interval = setInterval(() => {
+        callApi();
+      }, 90000);
+      if (localStorage.getItem("articles")) {
+        console.log("Using local storage");
+        setBackendData(JSON.parse(localStorage.getItem("articles")));
+      } else {
+        console.log("Using API");
+        //callApi();
+      }
+      return () => {
+        clearInterval(interval);
+      };
+    },[])
 
  return (
  	<div className="App">
@@ -66,8 +75,7 @@ function App() {
        <p>Loading...</p>
      ): (
        backendData.articles.map((article, i) => (
-        <>
-          <div className='headline-container'>
+          <div key={backendData.articles.indexOf(article)} className='headline-container'>
             <span className='headline-title'> {article.title} <a className='secondary-text' href={article.url}> To full article </a> </span>
             <span className='content'> {truncateArticleContent(article.content)} </span>
             <span className='author'> 
@@ -75,7 +83,6 @@ function App() {
               {article.author} 
             </span>
           </div>
-        </>
        ))
      )}
  	</div>
